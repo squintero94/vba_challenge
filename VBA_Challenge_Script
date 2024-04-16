@@ -1,0 +1,104 @@
+Attribute VB_Name = "Module1"
+Sub stocks()
+    Dim ws As Worksheet
+    Dim ticker_symbol As String
+    Dim open_value As Double
+    Dim close_value As Double
+    Dim total_volume As Double
+    Dim yearly_change As Double
+    Dim percent_change As Double
+    Dim lastRow As Long
+    Dim Summary_Table_Row As Integer
+    Dim greatest_increase As Double
+    Dim greatest_decrease As Double
+    Dim greatest_volume As Double
+    Dim ticker_increase As String
+    Dim ticker_decrease As String
+    Dim ticker_gv As String
+    
+    
+    For Each ws In ThisWorkbook.Worksheets
+        lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+        Summary_Table_Row = 2
+        
+        ' Print the headers in the Summary Table
+        ws.Cells(1, "I").Value = "Ticker"
+        ws.Cells(1, "J").Value = "Yearly Change"
+        ws.Cells(1, "K").Value = "Percent Change"
+        ws.Cells(1, "L").Value = "Total Stock Volume"
+        ws.Cells(2, "O").Value = "Greatest % Increase"
+        ws.Cells(3, "O").Value = "Greatest % Decrease"
+        ws.Cells(4, "O").Value = "Greatest Total Volume"
+        ws.Cells(1, "P").Value = "Ticker"
+        ws.Cells(1, "Q").Value = "Value"
+        
+        For i = 2 To lastRow
+            If ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+                open_value = ws.Cells(i, 3).Value
+            
+            ElseIf ws.Cells(i + 1, 1).Value = ws.Cells(i, 1).Value Then
+                total_volume = total_volume + ws.Cells(i, 7).Value
+            
+            ElseIf ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                close_value = ws.Cells(i, 6).Value
+                yearly_change = close_value - open_value
+                percent_change = (close_value / open_value) - 1
+                total_volume = total_volume + ws.Cells(i, 7).Value
+                
+                ' Set the Ticker Symbol
+                ticker_symbol = ws.Cells(i, 1).Value
+                
+                ' Print the data in the Summary Table
+                ws.Range("I" & Summary_Table_Row).Value = ticker_symbol
+                ws.Range("J" & Summary_Table_Row).Value = yearly_change
+                ws.Range("K" & Summary_Table_Row).Value = percent_change
+                ws.Range("L" & Summary_Table_Row).Value = total_volume
+                
+                'Reset the values for the next ticker
+                open_value = 0
+                close_value = 0
+                yearly_change = 0
+                percent_change = 0
+                total_volume = 0
+                
+                ' Add one to the summary table row
+                Summary_Table_Row = Summary_Table_Row + 1
+                
+            End If
+        Next i
+        
+        For i = 2 To lastRow
+                ' Set Script for Greatest %, etc.
+            If ws.Cells(i, 12).Value > greatest_volume Then
+                greatest_volume = ws.Cells(i, 12).Value
+                ticker_gv = ws.Cells(i, 9).Value
+            End If
+        
+            ' Set Script for Greatest %, etc
+            If ws.Cells(i, 11).Value > greatest_increase Then
+                greatest_increase = ws.Cells(i, 11).Value
+                ticker_increase = ws.Cells(i, 9).Value
+            End If
+        
+            If ws.Cells(i, 11).Value < greatest_decrease Then
+                greatest_decrease = ws.Cells(i, 11).Value
+                ticker_decrease = ws.Cells(i, 9).Value
+            End If
+        Next i
+        
+        For i = 2 To lastRow
+            If ws.Cells(i, 10).Value > 0 Then
+                ws.Cells(i, 10).Interior.ColorIndex = 4
+            ElseIf ws.Cells(i, 10).Value < 0 Then
+                ws.Cells(i, 10).Interior.ColorIndex = 3
+            End If
+        Next i
+        
+        ws.Cells(2, "P").Value = ticker_increase
+        ws.Cells(3, "P").Value = ticker_decrease
+        ws.Cells(4, "P").Value = ticker_gv
+        ws.Cells(2, "Q").Value = greatest_increase
+        ws.Cells(3, "Q").Value = greatest_decrease
+        ws.Cells(4, "Q").Value = greatest_volume
+    Next ws
+End Sub
